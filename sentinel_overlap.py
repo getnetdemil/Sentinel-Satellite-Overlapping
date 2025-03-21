@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from sentinelhub import SHConfig, SentinelHubCatalog, Geometry, DataCollection
 from shapely.geometry import Point
 import pyproj
+from shapely.geometry import Point, shape  
 from shapely.ops import transform
 
 # Configure Sentinel Hub credentials
@@ -47,20 +48,43 @@ def get_acquisitions(collection, geometry, start_date, end_date):
     } for item in results]
 
 def calculate_overlap(geom1, geom2):
-    """Calculate overlap with better precision"""
+    """Calculate spatial overlap percentage with proper error handling"""
     try:
-        wgs84 = pyproj.CRS('EPSG:4326')
-        utm = pyproj.CRS(f'EPSG:326{int((shape(geom1).centroid.x + 180)/6) + 1}')  # UTM zone
-        project = pyproj.Transformer.from_crs(wgs84, utm, always_xy=True).transform
+        # Convert GeoJSON geometries to Shapely objects
+        poly1 = shape(geom1)
+        poly2 = shape(geom2)
         
-        poly1 = transform(project, shape(geom1))
-        poly2 = transform(project, shape(geom2))
+        # Get UTM zone for coordinate system transformation
+        centroid_x = poly1.centroid.x
+        utm_zone = int((centroid_x + 180)/6) + 1
+        utm_crs = pyproj.CRS(f'EPSG:326{utm_zone}')
         
-        intersection = poly1.intersection(poly2)
-        return (intersection.area / poly1.area) * 100
+        # Create coordinate transformer
+        transformer = pyproj.Transformer.from_crs(
+            pyproj.CRS('EPSG:4326'), 
+            utm_crs, 
+            always_xy=True
+        )
+        
+        # Transform geometries to UTM
+        poly1_utm = transform(transformer.transform, poly1)
+        poly2_utm = transform(transformer.transform, poly2)
+        
+        # Calculate intersection
+        intersection = poly1_utm.intersection(poly2_utm)
+        if intersection.is_empty:
+            return 0.0
+            
+        # Calculate overlap percentage
+        overlap_pct = (intersection.area / poly1_utm.area) * 100
+        return round(overlap_pct, 2)
+
     except Exception as e:
-        print(f"Overlap calculation error: {e}")
-        return 0
+        print(f"\nOverlap calculation error details:")
+        print(f"- Geometry 1: {geom1}")
+        print(f"- Geometry 2: {geom2}")
+        print(f"- Error message: {str(e)}")
+        return 0.0
 
 def main():
     parser = argparse.ArgumentParser(description='Find Sentinel acquisition overlaps')
