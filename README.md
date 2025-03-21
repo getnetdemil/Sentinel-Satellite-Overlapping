@@ -20,7 +20,7 @@ A Python tool to find temporal and spatial overlaps between Sentinel-1 and Senti
 
 1. **Clone Repository**
 ```
-git clone https://github.com/yourusername/sentinel-overlap-tool.git
+git clone https://github.com/getnetdemil/sentinel-satellite-overlapping.git
 cd sentinel-overlap-tool
 ```
 
