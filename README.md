@@ -19,19 +19,19 @@ A Python tool to find temporal and spatial overlaps between Sentinel-1 and Senti
 ## Installation
 
 1. **Clone Repository**
-```
+```text
 git clone https://github.com/getnetdemil/sentinel-satellite-overlapping.git
-cd sentinel-overlap-tool
+cd sentinel-satellite-overlapping
 ```
 
 2. **Install Dependencies**
-```
+```text
 pip install -r requirements.txt
 ```
 
 3. **Configure Sentinel Hub Credentials**
    - Create `.env` file:
-   ```
+   ```text
    SH_CLIENT_ID="your-client-id"
    SH_CLIENT_SECRET="your-client-secret"
    ```
@@ -40,12 +40,12 @@ pip install -r requirements.txt
 ## Usage
 
 Basic command:
-```
+```text
 python sentinel_overlap.py <latitude> <longitude> <start_date> <end_date>
 ```
 
 ### Example: New York City
-```
+```text
 python sentinel_overlap.py 40.7128 -74.0060 01:11:23 07:11:23 \
   --buffer 0.5 --max-diff 180 --min-overlap 10
 ```
